@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 <head>
@@ -181,7 +180,7 @@
                     <div class="relative w-full max-w-lg aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                         <img src="https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&q=80&w=800" 
                              alt="Terang Bulan Sarang Madu Topping Melimpah" 
-                             class="w-full h-full object-cover transform hover:scale-105 transition-duration-500 transition-all">
+                             class="w-full h-full object-cover transform hover:scale-105 transition-all duration-500">
                         <div class="absolute inset-0 bg-gradient-to-t from-choco-950/70 via-transparent to-transparent"></div>
                         
                         <!-- Floating Badge 1 -->
@@ -601,17 +600,35 @@
                     <span id="copy-toast" class="text-[10px] text-emerald-600 font-bold block mt-1 hidden">✓ Nominal berhasil disalin!</span>
                 </div>
 
-                <!-- Complete QRIS Image (1000241912.png) -->
-                <div class="qris-card p-4 text-center border border-slate-200 space-y-3">
+                <!-- Standar QRIS Card Display -->
+                <div class="qris-card p-5 text-center border border-slate-200 space-y-4">
                     <div class="qris-corner-top"></div>
                     <div class="qris-corner-bottom"></div>
 
-                    <div class="relative z-10 w-full max-w-xs mx-auto p-2 bg-white rounded-2xl border-2 border-slate-900 shadow-md flex flex-col items-center justify-center overflow-hidden">
-                        <!-- Displays the provided QRIS Image -->
-                        <img src="1000241912.png" alt="QRIS Terang Bulan Sarang Madu" class="w-full h-auto object-contain rounded-xl max-h-[400px]" onerror="this.onerror=null; this.src='https://placehold.co/400x550/ffffff/ed1c24?text=QRIS+Terang+Bulan+Sarang+Madu';">
+                    <!-- Header Logos QRIS & GPN -->
+                    <div class="relative z-10 flex items-center justify-between px-2 pt-1 border-b pb-3 border-slate-100">
+                        <div class="text-left">
+                            <span class="font-black text-red-600 text-xl tracking-tighter block leading-none">QRIS</span>
+                            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">National Standard</span>
+                        </div>
+                        <div class="bg-red-600 text-white font-extrabold text-xs italic px-2 py-0.5 rounded shadow-xs">
+                            GPN
+                        </div>
                     </div>
 
-                    <p class="relative z-10 text-xs font-bold text-slate-700">Terang Bulan Sarang Madu (NMID: ID1026479419453)</p>
+                    <div class="relative z-10 w-full max-w-[260px] mx-auto p-3 bg-white rounded-2xl border-2 border-slate-900 shadow-md flex flex-col items-center justify-center">
+                        <!-- Dynamic generated QR Code image to ensure 100% display -->
+                        <img id="qris-code-img" src="" alt="QRIS Terang Bulan Sarang Madu" class="w-full h-auto object-contain rounded-lg">
+                        
+                        <div class="w-full text-center mt-2 pt-2 border-t border-slate-100">
+                            <p class="text-[11px] font-bold text-choco-900 leading-tight">TERANG BULAN SARANG MADU</p>
+                            <p class="text-[9px] text-slate-500 mt-0.5 font-mono">NMID: ID1026479419453</p>
+                        </div>
+                    </div>
+
+                    <p class="relative z-10 text-[11px] font-bold text-slate-600 bg-amber-50 py-1.5 px-3 rounded-lg border border-amber-200/60 inline-block">
+                        <i class="fa-solid fa-mobile-screen-button text-amber-600 mr-1"></i> Scan dengan GoPay, OVO, ShopeePay, Dana, BCA, Mandiri, dll.
+                    </p>
                 </div>
 
                 <!-- Upload Payment Proof & Verification Form -->
@@ -651,7 +668,7 @@
                     <div class="flex items-start gap-2.5 pt-1">
                         <input type="checkbox" id="payment-confirm-checkbox" onchange="validatePaymentProofForm()" class="mt-0.5 rounded border-slate-300 text-honey-600 focus:ring-honey-500 w-4 h-4 cursor-pointer">
                         <label for="payment-confirm-checkbox" class="text-[11px] text-slate-600 font-medium cursor-pointer">
-                            Saya telah mementransfer uang sebesar total pesanan ke QRIS Terang Bulan Sarang Madu.
+                            Saya telah mentransfer uang sebesar total pesanan ke QRIS Terang Bulan Sarang Madu.
                         </label>
                     </div>
                 </div>
@@ -1217,6 +1234,11 @@
             const grandTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
             document.getElementById('qris-modal-total-price').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
 
+            // Set Dynamic QR Code Generator URL
+            const qrisData = `00020101021126580014ID.LINKAJA.WWW01189360091100223126750215ID10264794194530303UMI5204541153033605802ID5926Terang Bulan Sarang Madu6007Jakarta61051234562070703A016304`;
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrisData)}`;
+            document.getElementById('qris-code-img').src = qrImageUrl;
+
             toggleCartDrawer(false);
             const modal = document.getElementById('qris-modal-backdrop');
             modal.classList.remove('hidden');
@@ -1231,16 +1253,11 @@
 
         function copyPayAmount() {
             const grandTotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = grandTotal.toString();
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            const toast = document.getElementById('copy-toast');
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+            navigator.clipboard.writeText(grandTotal.toString()).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            });
         }
 
         function handleProofUpload(event) {
@@ -1325,4 +1342,3 @@
     </script>
 </body>
 </html>
-```
